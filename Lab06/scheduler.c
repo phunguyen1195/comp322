@@ -6,6 +6,7 @@
 #include <time.h>
 #include <signal.h>
 
+#include "print_help.h"
 #include "scheduler.h"
 #include "worker.h"
 
