@@ -6,7 +6,6 @@
 #include <time.h>
 #include <signal.h>
 
-#include "print_help.h"
 #include "scheduler.h"
 #include "worker.h"
 
@@ -337,7 +336,7 @@ int main(int argc, const char **argv)
 
 	/* check the arguments. */
 	if (argc < 3) {
-		print_help(argv[0]);
+		//print_help(argv[0]);
 		exit(0);
 	}
 
@@ -345,7 +344,7 @@ int main(int argc, const char **argv)
 	queue_size = atoi(argv[2]);
 	quanta = (int*)malloc(sizeof(int)*thread_count);
 	if (argc != 3 + thread_count) {
-		print_help(argv[0]);
+		//print_help(argv[0]);
 		exit(0);
 	}
 
