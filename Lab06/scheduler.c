@@ -284,26 +284,30 @@ static void create_workers(int thread_count, int *quanta)
 /*
  * runs the scheduler.
  */
-static void *scheduler_run(void *unused)
-{
-	wait_for_queue();
+ static void *scheduler_run(void *unused)
+ {
+ 	wait_for_queue();
+ 	thread_info_t t;
+ 	struct timespec suspend_time;
+ 	struct timespec resume_time;
+ 	resume_time = t.resume_time;
+ 	suspend_time = t.suspend_time;
+ 	/* TODO: start the timer */
+ 	resume_time.tv_sec = QUANTUM;
+   resume_time.tv_nsec = 0;
+   suspend_time.tv_sec = 0;
+   suspend_time.tv_nsec = 100000000;
+ 	if(timer_settime(timer, 0, &resume_time, &suspend_time) == 0)
+   	timer_handler();
+   else
+   	printf("timer_settime() failed with %d\n", errno);
 
-	/* TODO: start the timer */
-	resume_time.tv_sec = QUANTUM;
-  resume_time.tv_nsec = 0;
-  resume_time.tv_sec = 0;
-  resume_time.tv_nsec = 100000000;
-	if(timer_settime(timer, 0, &resume_time, &suspend_time) == 0)
-  	timer_handler();
-  else
-  	printf("timer_settime() failed with %d\n", errno);
+ 	/*keep the scheduler thread alive*/
+ 	while( !quit )
+ 		sched_yield();
 
-	/*keep the scheduler thread alive*/
-	while( !quit )
-		sched_yield();
-
-	return NULL;
-}
+ 	return NULL;
+ }
 
 /*
  * starts the scheduler.
