@@ -133,12 +133,12 @@ static void suspend_worker(thread_info_t *info)
 	   * Thread still running: suspend.
 	   * TODO: Signal the worker thread that it should suspend.
 	   */
-		struct sigaction usr1_action;
- 		usr1_action.sa_flags = SA_SIGINFO;
-		usr1_action.sa_sigaction = suspend_thread;
+		struct sigaction st;
+ 		st.sa_flags = SA_SIGINFO;
+		st.sa_sigaction = suspend_thread;
 
-		sigemptyset(&usr1_action.sa_mask);
-		sigaction(SIGUSR1, &usr1_action, NULL);
+		sigemptyset(&st.sa_mask);
+		sigaction(SIGUSR1, &st, NULL);
 	  /* Update Schedule queue */
 	  list_remove(&sched_queue,info->le);
 	  list_insert_tail(&sched_queue,info->le);
