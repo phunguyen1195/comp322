@@ -41,6 +41,8 @@ static void wait_for_queue();
  */
 void update_run_time(thread_info_t *info) {
         /* TODO: implement this function */
+		 clock_gettime(CLOCK_REALTIME, &info->suspend_time);
+	   info->run_time += time_difference(&info->suspend_time, &info->resume_time);
 }
 
 /*
@@ -49,6 +51,8 @@ void update_run_time(thread_info_t *info) {
  */
 void update_wait_time(thread_info_t *info) {
         /* TODO: implement this function */
+		clock_gettime(CLOCK_REALTIME, &info->resume_time);
+	 	info->wait_time += time_difference(&info->resume_time, &info->suspend_time);
 }
 
 
@@ -79,7 +83,7 @@ static void resume_worker(thread_info_t *info)
 	/*
 	 * TODO: signal the worker thread that it can resume
 	 */
-
+	pthread_kill(info->thrid, SIGUSR2);
 	/* update the wait time for the thread */
 	update_wait_time(info);
 
@@ -90,7 +94,7 @@ void cancel_worker(thread_info_t *info)
 {
 
 	/* TODO: send a signal to the thread, telling it to kill itself*/
-
+	pthread_kill(info->thrid, SIGTERM);
 	/* Update global wait and run time info */
 	wait_times += info->wait_time;
 	run_times += info->run_time;
@@ -121,14 +125,20 @@ static void suspend_worker(thread_info_t *info)
 	update_run_time(info);
 
 	/* TODO: Update quanta remaining. */
-
+	whatgoeshere = info->quanta - 1;
+	info->quanta = whatgoeshere;
 	/* TODO: decide whether to cancel or suspend thread */
-	if(whatgoeshere) {
+	if(whatgoeshere > 0) {
 	  /*
 	   * Thread still running: suspend.
 	   * TODO: Signal the worker thread that it should suspend.
 	   */
+		struct sigaction usr1_action;
+ 		usr1_action.sa_flags = SA_SIGINFO;
+		usr1_action.sa_sigaction = suspend_thread;
 
+		sigemptyset(&usr1_action.sa_mask);
+		sigaction(SIGUSR1, &usr1_action, NULL);
 	  /* Update Schedule queue */
 	  list_remove(&sched_queue,info->le);
 	  list_insert_tail(&sched_queue,info->le);
@@ -277,7 +287,8 @@ static void create_workers(int thread_count, int *quanta)
 		pthread_detach(info->thrid);
 
 		/* TODO: initialize the time variables for each thread for performance evalution*/
-
+		clock_gettime(CLOCK_REALTIME, &info->suspend_time);
+		clock_gettime(CLOCK_REALTIME, &info->resume_time);
 	}
 }
 
@@ -287,18 +298,14 @@ static void create_workers(int thread_count, int *quanta)
  static void *scheduler_run(void *unused)
  {
  	wait_for_queue();
- 	thread_info_t t;
- 	struct timespec suspend_time;
- 	struct timespec resume_time;
- 	resume_time = t.resume_time;
- 	suspend_time = t.suspend_time;
+ 	struct itimerspec t;
  	/* TODO: start the timer */
- 	resume_time.tv_sec = QUANTUM;
-   resume_time.tv_nsec = 0;
-   suspend_time.tv_sec = 0;
-   suspend_time.tv_nsec = 100000000;
- 	if(timer_settime(timer, 0, &resume_time, &suspend_time) == 0)
-   	timer_handler();
+ 	 t.it_value.tv_sec = QUANTUM;
+   t.it_value.tv_nsec = 0;
+   t.it_interval.tv_sec = QUANTUM;
+   t.it_interval.tv_nsec = 0;
+ 	if(timer_settime(timer, 0, &t, NULL) == 0)
+		printf("");
    else
    	printf("timer_settime() failed with %d\n", errno);
 
@@ -324,6 +331,14 @@ static int start_scheduler(pthread_t *thrid)
 	return err;
 }
 
+static void print_help(const char *progname)
+{
+	printf("usage: %s <num_threads> <queue_size> <i_1, i_2 ... i_numofthreads>\n", progname);
+	printf("\tnum_threads: the number of worker threads to run\n");
+	printf("\tqueue_size: the number of threads that can be in the scheduler at one time\n");
+	printf("\ti_1, i_2 ...i_numofthreads: the number of quanta each worker thread runs\n");
+}
+
 /*
  * reads the command line arguments and starts the scheduler & worker threads.
  */
@@ -336,7 +351,7 @@ int main(int argc, const char **argv)
 
 	/* check the arguments. */
 	if (argc < 3) {
-		//print_help(argv[0]);
+		print_help(argv[0]);
 		exit(0);
 	}
 
@@ -344,7 +359,7 @@ int main(int argc, const char **argv)
 	queue_size = atoi(argv[2]);
 	quanta = (int*)malloc(sizeof(int)*thread_count);
 	if (argc != 3 + thread_count) {
-		//print_help(argv[0]);
+		print_help(argv[0]);
 		exit(0);
 	}
 
