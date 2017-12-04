@@ -331,14 +331,6 @@ static int start_scheduler(pthread_t *thrid)
 	return err;
 }
 
-static void print_help(const char *progname)
-{
-	printf("usage: %s <num_threads> <queue_size> <i_1, i_2 ... i_numofthreads>\n", progname);
-	printf("\tnum_threads: the number of worker threads to run\n");
-	printf("\tqueue_size: the number of threads that can be in the scheduler at one time\n");
-	printf("\ti_1, i_2 ...i_numofthreads: the number of quanta each worker thread runs\n");
-}
-
 /*
  * reads the command line arguments and starts the scheduler & worker threads.
  */
@@ -351,7 +343,7 @@ int main(int argc, const char **argv)
 
 	/* check the arguments. */
 	if (argc < 3) {
-		print_help(argv[0]);
+		//print_help(argv[0]);
 		exit(0);
 	}
 
@@ -359,7 +351,7 @@ int main(int argc, const char **argv)
 	queue_size = atoi(argv[2]);
 	quanta = (int*)malloc(sizeof(int)*thread_count);
 	if (argc != 3 + thread_count) {
-		print_help(argv[0]);
+		//print_help(argv[0]);
 		exit(0);
 	}
 
