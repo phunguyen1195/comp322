@@ -54,7 +54,7 @@ void *worker(void *param)
 	int hit_count = 0;
 	double x,y;
 	pthread_mutex_lock(&mutex);
-	for (i = 0; i < number_of_darts; i++) {
+	for (i = 0; i < NUMBER_OF_DARTS; i++) {
 
 		/* TODO: generate random numbers between -1.0 and +1.0 (exclusive)
 		and test if it is within the circle.*/
