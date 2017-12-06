@@ -58,11 +58,11 @@ void *worker(void *param)
 
 		/* TODO: generate random numbers between -1.0 and +1.0 (exclusive)
 		and test if it is within the circle.*/
-		if(random_double() <= 1.0 || random_double() >= -1.0){
+		if(random_double() <= 1.0 || random_double() >= -1.0)
 			y = random_double();
-		if(random_double() <= 1.0 || random_double() >= -1.0){
+		if(random_double() <= 1.0 || random_double() >= -1.0)
 			x = random_double();
-		if(sqrt(x*x + y*y) <= 1)
+		if(sqrt(x*x + y*y) <= 1){
 			hit_count ++;
 			circle_count ++;
 		}
