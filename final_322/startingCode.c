@@ -30,13 +30,13 @@ int main (int argc, const char * argv[]) {
 
 	/* seed the random number generator */
 	srandom((unsigned)time(NULL));
-	pthread_mutex_init(&mutex, NULL);
+
 	/*TODO: Use multi-threading to update circle_count*/
 	for (i = 0; i < NUMBER_OF_THREADS; i++) {
 		pthread_create(&tids[i], NULL, worker, NULL);
 	}
 
-	//for (i = 0; i < NUM_THREADS; i++)
+	//for (i = 0; i < NUMBER_OF_THREADS; i++)
 		//pthread_join(tids[i], NULL);
 
 	/* estimate Pi */
@@ -48,24 +48,33 @@ int main (int argc, const char * argv[]) {
 
 void *worker(void *param)
 {
+	//printf("help");
+	pthread_mutex_init(&mutex, NULL);
 	int number_of_darts;
 	number_of_darts = *((int *)param);
 	int i;
 	int hit_count = 0;
 	double x,y;
+	printf("help");
 	pthread_mutex_lock(&mutex);
+
 	for (i = 0; i < NUMBER_OF_DARTS; i++) {
 
 		/* TODO: generate random numbers between -1.0 and +1.0 (exclusive)
 		and test if it is within the circle.*/
-		if(random_double() <= 1.0 || random_double() >= -1.0)
-			y = random_double();
-		if(random_double() <= 1.0 || random_double() >= -1.0)
-			x = random_double();
+		y = random_double();
+		x = random_double();
+		if(x <= 1.0 || x >= -1.0){
+
+		if(y <= 1.0 || y >= -1.0){
+
 		if(sqrt(x*x + y*y) <= 1){
+			printf ("%f",sqrt(x*x + y*y));
 			hit_count ++;
 			circle_count ++;
 		}
+	}
+	}
 	}
 	pthread_mutex_unlock(&mutex);
 	pthread_exit(0);
